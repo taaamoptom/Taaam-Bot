@@ -1,1 +1,1 @@
-worker: python savol_javob_bot.py
+web: python savol_javob_bot.py
