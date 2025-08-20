@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from dotenv import load_dotenv
 import telebot
 from telebot import types
@@ -38,19 +39,105 @@ client = gspread.authorize(creds)
 
 sheet_file = client.open("Lidlar")
 sheets = {
-    "👩 Manager 1": sheet_file.worksheet("Manager_1"),
-    "👨 Manager 2": sheet_file.worksheet("Manager_2")
+    "👩 Mohigul": sheet_file.worksheet("Mohigul"),
+    "👩 Sadoqatxon": sheet_file.worksheet("Sadoqatxon")
 }
 
 # ==== Viloyatlar va tumanlar ====
 regions = {
-    "Toshkent": ["Chilonzor", "Yunusobod", "Sergeli", "Bektemir"],
-    "Farg‘ona": ["Qo‘qon", "Marg‘ilon", "Beshariq", "Rishton"],
-    "Andijon": ["Asaka", "Xo‘jaobod", "Shahrixon", "Marhamat"],
-    "Namangan": ["Chust", "Kosonsoy", "To‘raqo‘rg‘on", "Uychi"],
-    "Qarshi": ["Koson", "Mirishkor", "Shahrisabz", "Kitob"],
-    "Buxoro": ["G‘ijduvon", "Qorako‘l", "Olot", "Vobkent"],
-    "Samarqand": ["Urgut", "Kattaqo‘rg‘on", "Bulung‘ur", "Ishtixon"]
+    "Toshkent viloyati": [
+        "Nurafshon shahri", "Bekobod tumani", "Boʻka tumani", "Boʻstonliq tumani",
+        "Chinoz tumani", "Ohangaron tumani", "Oqqoʻrgʻon tumani", "Parkent tumani",
+        "Piskent tumani", "Quyichirchiq tumani", "Oʻrtachirchiq tumani", "Yangiyoʻl tumani",
+        "Zangiota tumani", "Toshkent tumani", "Yuqorichirchiq tumani", "Qibray tumani",
+    ],
+    
+    "Toshkent shahri": [
+        "Chilonzor tumani", "Mirzo Ulug‘bek tumani", "Mirobod tumani", "Sergeli tumani",
+        "Shahrixon tumani", "Shoʻrchiq tumani", "Toshkent shahri", "Uchqoʻrgʻon tumani",
+        "Xoʻjaobod tumani", "Yunusobod tumani", "Zafarobod tumani", "Zomin tumani",
+    ],
+
+    "Farg‘ona viloyati": [
+        "Farg‘ona shahri", "Farg‘ona tumani", "Beshariq tumani", "Bog`dod tumani", "Buvayda tumani", "Dang‘ara tumani", 
+        "Furqat tumani", "Qo‘shtepa tumani", "Quva tumani", "Quvasoy tumani", "Oltiariq tumani", 
+        "Rishton tumani", "So'x tumani", "Toshloq tumani", "Uchko‘prik tumani", "Yozyovon tumani", "Qo‘qon shahri",
+    ],
+    
+    "Andijon viloyati": [
+        "Andijon shahri", "Andijon tumani", "Asaka tumani", "Baliqchi tumani",
+        "Boʻston tumani", "Buloqboshi tumani", "Izboskan tumani", "Jalaquduq tumani",
+        "Qoʻrgʻontepa tumani", "Marhamat tumani", "Oltinkoʻl tumani", "Paxtaobod tumani", 
+        "Shahrixon tumani", "Ulugʻnor tumani", "Xoʻjaobod tumani",
+    ],
+    
+    "Namangan viloyati": [
+        "Namangan shahri", "Chortoq tumani", "Chust tumani", "Kosonsoy tumani",
+        "Mingbuloq tumani", "Namangan tumani", "Norin tumani", "Pop tumani",
+        "Toʻraqoʻrgʻon tumani", "Uchqoʻrgʻon tumani", "Uychi tumani", "Yangiqoʻrgʻon tumani",
+    ],
+
+    "Qashqadaryo viloyati": [
+        "Qarshi shahri", "Chiroqchi tumani", "Dehqonobod tumani", "Gʻuzor tumani",
+        "Kasbi tumani", "Kitob tumani", "Koson tumani", "Mirishkor tumani",
+        "Muborak tumani", "Nishon tumani", "Qamashi tumani", "Qarshi tumani",
+        "Shahrisabz shahri", "Shahrisabz tumani", "Yakkabogʻ tumani",
+    ],
+    
+    "Surxondaryo viloyati": [
+        "Termiz shahri", "Angor tumani", "Bandixon tumani", "Boysun tumani",
+        "Denov tumani", "Jarqoʻrgʻon tumani", "Muzrabot tumani", "Oltinsoy tumani",
+        "Qiziriq tumani", "Qumqoʻrgʻon tumani", "Sariosiyo tumani",
+        "Sherobod tumani", "Shoʻrchi tumani", "Termiz tumani", "Uzun tumani"
+    ],
+
+    "Navoiy viloyati": [
+        "Navoiy shahri", "Zarafshon shahri", "Karmana tumani", "Konimex tumani",
+        "Navbahor tumani", "Nurota tumani", "Qiziltepa tumani", "Xatirchi tumani",
+        "Tomdi tumani", "Uchquduq tumani"
+    ],
+      
+    "Xorazm viloyati": [
+        "Urganch shahri", "Bogʻot tumani", "Gurlan tumani", "Xonqa tumani",
+        "Hazorasp tumani", "Shovot tumani", "Yangiariq tumani",
+        "Yangibozor tumani", "Qoʻshkoʻpir tumani", "Tupproqqalʼa tumani"
+    ],
+      
+    "Samarqand viloyati": [
+        "Samarqand shahri", "Bulungʻur tumani", "Ishtixon tumani", "Jomboy tumani",           
+        "Kattaqoʻrgʻon tumani", "Kattaqoʻrgʻon shahri", "Narpay tumani",
+        "Nurobod tumani", "Oqdaryo tumani", "Paxtachi tumani",
+        "Pastdargʻom tumani", "Payariq tumani", "Qoʻshrabot tumani",
+        "Tayloq tumani", "Urgut tumani"
+    ],
+      
+    "Jizzax viloyati": [
+        "Jizzax shahri", "Arnasoy tumani", "Baxmal tumani", "Doʻstlik tumani",
+        "Forish tumani", "Gʻallaorol tumani", "Mirzachoʻl tumani",
+        "Paxtakor tumani", "Yangiobod tumani", "Zarbdor tumani",
+        "Zafarobod tumani", "Zomin tumani", "Sharof Rashidov tumani"
+    ],
+      
+    "Buxoro viloyati": [
+        "Buxoro shahri", "Buxoro tumani", "Qorakoʻl tumani", "Gʻijduvon tumani",
+        "Jondor tumani", "Kogon tumani", "Olot tumani", "Peshku tumani",
+        "Romitan tumani", "Shofirkon tumani", "Vobkent tumani",
+        "Peshkun tumani", "Kogon shahri (alohida tuman maqomida)"
+    ],
+      
+    "Sirdaryo viloyati": [
+        "Guliston shahri", "Guliston tumani", "Sardoba tumani",
+        "Boyovut tumani", "Mirzaobod tumani", "Oqoltin tumani",
+        "Sayxunobod tumani", "Xovos tumani"
+    ],
+
+    "Qoraqalpog‘iston Respublikasi": [
+        "Amudaryo tumani", "Beruniy tumani", "Boʻzattum tumani",
+        "Chimboy tumani", "Ellikqal'a tumani", "Kegeyli tumani",
+        "Moʻynoq tumani", "Nukus tumani", "Qanlikoʻl tumani",
+        "Qoʻngʻirot tumani", "Qoraoʻzak tumani", "Shumanay tumani",
+        "Taxtakoʻpir tumani", "Toʻrtkoʻl tumani", "Xoʻjayli tumani",  
+    ],
 }
 
 # ==== Kategoriyalar ====
@@ -61,8 +148,8 @@ categories = [
 
 # ==== Managerlar ====
 managers = {
-    "👩 Manager 1": 7680588743,
-    "👨 Manager 2": 987654321
+    "👩 Mohigul": 1926487266,
+    "👩 Sadoqatxon": 7566604257
 }
 
 def get_manager_name(chat_id):
@@ -76,22 +163,17 @@ def get_manager_name(chat_id):
 def start(message):
     chat_id = message.chat.id
 
-    # foydalanuvchini ro‘yxatga qo‘shamiz
     if chat_id not in managers.values():
         users.add(chat_id)
 
-    # agar manager bo‘lsa
     if chat_id in managers.values():
-        bot.send_message(chat_id, f"👋 Xush kelibsiz! Siz {get_manager_name(chat_id)}. "
-                                  f"Endi sizga foydalanuvchilarning ma’lumotlari kelib turadi.")
+        bot.send_message(chat_id, f"👋 Xush kelibsiz! Siz {get_manager_name(chat_id)}.")
         return
 
-    # oddiy foydalanuvchi
     user_data[chat_id] = {"categories": []}
-    bot.send_message(chat_id, "👋 Salom! Ismingizni kiriting:")
+    bot.send_message(chat_id, "👋 Salom! Ism va familiyangizni yozing:")
     bot.register_next_step_handler(message, get_name)
 
-# ==== Ism olish ====
 def get_name(message):
     chat_id = message.chat.id
     user_data[chat_id]["name"] = message.text
@@ -100,22 +182,20 @@ def get_name(message):
     markup.add(phone_btn)
     bot.send_message(chat_id, "📱 Telefon raqamingizni yuboring:", reply_markup=markup)
 
-# ==== Telefon olish ====
 @bot.message_handler(content_types=['contact'])
 def get_contact(message):
     chat_id = message.chat.id
     phone = message.contact.phone_number.replace("+", "").replace(" ", "")
     user_data[chat_id]["phone"] = phone
     user_data[chat_id]["username"] = message.from_user.username or "-"
-    bot.send_message(chat_id, "✅ Raqamingiz qabul qilindi.", reply_markup=types.ReplyKeyboardRemove())
+    bot.send_message(chat_id, "✅ Raqam qabul qilindi.", reply_markup=types.ReplyKeyboardRemove())
     show_regions(chat_id)
 
-# ==== Viloyat tanlash ====
 def show_regions(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for region in regions.keys():
         markup.add(types.KeyboardButton(region))
-    bot.send_message(chat_id, "📍 Yashash viloyatingizni tanlang:", reply_markup=markup)
+    bot.send_message(chat_id, "📍 Viloyatingizni tanlang:", reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.text in regions.keys())
 def get_region(message):
@@ -124,7 +204,7 @@ def get_region(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for district in regions[message.text]:
         markup.add(types.KeyboardButton(district))
-    bot.send_message(chat_id, f"📍 {message.text} viloyati tanlandi.\nEndi tumanni tanlang:", reply_markup=markup)
+    bot.send_message(chat_id, f"📍 {message.text} tanlandi. Endi tumanni tanlang:", reply_markup=markup)
 
 @bot.message_handler(func=lambda m: any(m.text in d for d in regions.values()))
 def get_district(message):
@@ -133,7 +213,6 @@ def get_district(message):
     bot.send_message(chat_id, f"✅ Manzil: {user_data[chat_id]['region']}, {message.text}", reply_markup=types.ReplyKeyboardRemove())
     show_categories(chat_id)
 
-# ==== Kategoriya tanlash ====
 def show_categories(chat_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = [types.InlineKeyboardButton(text=cat, callback_data=f"cat:{cat}") for cat in categories]
@@ -151,7 +230,7 @@ def callback_handler(call):
         else:
             user_data[chat_id]["categories"].append(category)
 
-        selected = "\n".join([f"- {c}" for c in user_data[chat_id]["categories"]]) or "❌ Hech narsa tanlanmagan"
+        selected = "\n".join([f"- {c}" for c in user_data[chat_id]["categories"]]) or "❌ Tanlanmagan"
         bot.edit_message_text(
             f"📂 Tanlangan kategoriyalar:\n{selected}\n\n👇 Tanlashni davom eting yoki tasdiqlang.",
             chat_id, call.message.message_id, reply_markup=call.message.reply_markup
@@ -162,12 +241,11 @@ def callback_handler(call):
             return
         show_managers(chat_id)
 
-# ==== Manager tanlash ====
 def show_managers(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for m in managers.keys():
         markup.add(types.KeyboardButton(m))
-    bot.send_message(chat_id, "👨‍💼 Qaysi manager bilan bog‘lanmoqchisiz?", reply_markup=markup)
+    bot.send_message(chat_id, "🤵🏻‍♀️ Manager tanlang:", reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.text in managers.keys())
 def get_manager(message):
@@ -177,18 +255,18 @@ def get_manager(message):
     user_data[chat_id]["manager"] = manager_name
 
     text = (
-        f"🆕 Yangi buyurtma!\n\n"
+        f"🆕 Yangi Lid!\n\n"
         f"👤 Ism: {user_data[chat_id].get('name')}\n"
         f"📱 Tel: +{user_data[chat_id].get('phone')}\n"
         f"💬 Username: @{user_data[chat_id].get('username')}\n\n"
         f"📍 Manzil: {user_data[chat_id]['region']}, {user_data[chat_id]['district']}\n\n"
         f"📂 Kategoriyalar:\n" + "\n".join([f"- {c}" for c in user_data[chat_id]['categories']]) +
-        f"\n\n👨‍💼 Manager: {manager_name}"
+        f"\n\n🤵🏻‍♀️ Manager: {manager_name}"
     )
 
     send_to_group_topic(text)
     bot.send_message(manager_id, text)
-    bot.send_message(chat_id, "✅ Ma’lumotlaringiz yuborildi!", reply_markup=types.ReplyKeyboardRemove())
+    bot.send_message(chat_id, "✅ Ma’lumot yuborildi!", reply_markup=types.ReplyKeyboardRemove())
 
     sheet = sheets[manager_name]
     sheet.append_row([
@@ -200,29 +278,26 @@ def get_manager(message):
         manager_name
     ])
 
-# ==== Guruhga yuborish ====
 def send_to_group_topic(text):
     if TOPIC_ID:
         bot.send_message(chat_id=GROUP_ID, text=text, message_thread_id=TOPIC_ID)
     else:
         bot.send_message(chat_id=GROUP_ID, text=text)
 
-# ==== ID olish ====
 @bot.message_handler(commands=['getid'])
 def get_id(message):
-    bot.send_message(message.chat.id, f"Bu chat ID: {message.chat.id}\nTopic ID: {message.message_thread_id}")
+    bot.send_message(message.chat.id, f"Chat ID: {message.chat.id}\nTopic ID: {message.message_thread_id}")
 
-# ==== Admin uchun broadcast ====
 @bot.message_handler(commands=['broadcast'])
 def broadcast(message):
     chat_id = message.chat.id
     if chat_id != ADMIN_ID:
-        bot.send_message(chat_id, "❌ Sizda bu komanda yo‘q.")
+        bot.send_message(chat_id, "❌ Sizda ruxsat yo‘q.")
         return
 
     text = message.text.replace("/broadcast", "").strip()
     if not text:
-        bot.send_message(chat_id, "ℹ️ Foydalanish: /broadcast <xabar matni>")
+        bot.send_message(chat_id, "ℹ️ Foydalanish: /broadcast <xabar>")
         return
 
     success, fail = 0, 0
@@ -233,7 +308,17 @@ def broadcast(message):
         except:
             fail += 1
 
-    bot.send_message(chat_id, f"✅ Xabar {success} ta foydalanuvchiga yuborildi.\n❌ {fail} ta yuborilmadi.")
+    bot.send_message(chat_id, f"✅ {success} ta foydalanuvchiga yuborildi.\n❌ {fail} ta yuborilmadi.")
 
-print("✅ Bot ishlayapti...")
-bot.infinity_polling()
+# ==== Polling with Auto-Restart ====
+def run_bot():
+    print("✅ Bot ishga tushdi...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"❌ Xatolik: {e}")
+            time.sleep(5)
+
+if __name__ == "__main__":
+    run_bot()
