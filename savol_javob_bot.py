@@ -1,14 +1,17 @@
 import os
-import json
+import threading
 import time
 from dotenv import load_dotenv
 import telebot
 from telebot import types
+from flask import Flask
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # ==== Load .env ====
 load_dotenv()
+
+
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROUP_ID = int(os.getenv("GROUP_ID"))
@@ -16,8 +19,13 @@ TOPIC_ID = int(os.getenv("TOPIC_ID"))
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
 bot = telebot.TeleBot(BOT_TOKEN)
+
+# ==== Flask app ====
+app = Flask(__name__)
 user_data = {}
 users = set()  # barcha foydalanuvchilar ro‘yxati
+
+
 
 # ==== Google Credentials ====
 google_creds = {
@@ -151,6 +159,8 @@ managers = {
     "👩 Mohigul": 1926487266,
     "👩 Sadoqatxon": 7566604257
 }
+
+
 
 def get_manager_name(chat_id):
     for k, v in managers.items():
@@ -310,6 +320,10 @@ def broadcast(message):
 
     bot.send_message(chat_id, f"✅ {success} ta foydalanuvchiga yuborildi.\n❌ {fail} ta yuborilmadi.")
 
+@app.route('/')
+def index():
+    return "✅ Bot ishlayapti!"
+
 # ==== Polling with Auto-Restart ====
 def run_bot():
     print("✅ Bot ishga tushdi...")
@@ -321,4 +335,9 @@ def run_bot():
             time.sleep(5)
 
 if __name__ == "__main__":
-    run_bot()
+    # Botni parallel thread’da ishga tushirish
+    threading.Thread(target=run_bot).start()
+
+    # Render PORT o‘zgaruvchisini ishlatadi
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
